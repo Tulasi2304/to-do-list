@@ -1,5 +1,6 @@
 const express = require('express');
 const ejs = require('ejs');
+const day = require('./date.js');
 
 const app = express();
 
@@ -7,25 +8,16 @@ app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-let items = [];
-let workItems = [];
+const items = [];
+const workItems = [];
 
 app.get("/", (req, res) =>{
-    let today = new Date();
-    let options = {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric'
-    };
-    
-    let getDay = today.toLocaleDateString('en-IN', options);
-    
+    const getDay = day();
     res.render('list', {title: getDay, newItems: items});
 });
 
 app.post("/", (req, res) => {
-    let item = req.body.todo;
-
+    const item = req.body.todo;
     if(req.body.list === 'Work'){
         workItems.push(item);
         res.redirect("/work");
@@ -37,8 +29,7 @@ app.post("/", (req, res) => {
 });
 
 app.get("/work", (req, res) => {
-    let title = "Work";
-    res.render("list", {title: title, newItems: workItems});
+    res.render("list", {title: "Work", newItems: workItems});
 });
 
 app.listen(3000, () => {
