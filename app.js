@@ -22,25 +22,39 @@ const item1 = new Item({
 
 const defaultItem = [item1];
 
-Item.insertMany(defaultItem).then(() => {
-    console.log("Successfully inserted default items");
-}).catch((error) => {
-    console.log(error);
-});
-
 app.get("/", (req, res) =>{
-    res.render('list', {title: "Today", newItems: items});
+    Item.find({}).then((result) => {
+        if(result.length === 0){
+            Item.insertMany(defaultItem).then(() => {
+                console.log("Successfully inserted default items");
+            }).catch((error) => {
+                console.log(error);
+            });
+            res.redirect('/');
+        }else{
+            res.render('list', {title: "Today", newItems: result});
+        }
+    }).catch((error) =>{
+        console.log(error);
+    });
 });
 
 app.post("/", (req, res) => {
-    const item = req.body.todo;
-    if(req.body.list === 'Work'){
-        workItems.push(item);
-        res.redirect("/work");
-    }else{
-        items.push(item);
-        res.redirect("/");
-    }
+    const newItem = req.body.todo;
+
+    const item = new Item({
+        name: newItem
+    });
+    item.save();
+    res.redirect('/');
+
+    // if(req.body.list === 'Work'){
+    //     workItems.push(item);
+    //     res.redirect("/work");
+    // }else{
+    //     items.push(item);
+    //     res.redirect("/");
+    // }
     
 });
 
