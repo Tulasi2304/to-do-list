@@ -23,7 +23,9 @@ const item1 = new Item({
 const defaultItem = [item1];
 
 app.get("/", (req, res) =>{
+
     Item.find({}).then((result) => {
+
         if(result.length === 0){
             Item.insertMany(defaultItem).then(() => {
                 console.log("Successfully inserted default items");
@@ -31,9 +33,11 @@ app.get("/", (req, res) =>{
                 console.log(error);
             });
             res.redirect('/');
-        }else{
+        }
+        else{
             res.render('list', {title: "Today", newItems: result});
         }
+
     }).catch((error) =>{
         console.log(error);
     });
@@ -41,7 +45,6 @@ app.get("/", (req, res) =>{
 
 app.post("/", (req, res) => {
     const newItem = req.body.todo;
-
     const item = new Item({
         name: newItem
     });
@@ -55,7 +58,19 @@ app.post("/", (req, res) => {
     //     items.push(item);
     //     res.redirect("/");
     // }
-    
+});
+
+app.post('/delete', (req, res) => {
+    const checkedItems = req.body.checkbox;
+
+    Item.findByIdAndDelete(checkedItems).then(() => {
+        console.log("Deleted checked item successfully");
+    })
+    .catch((error) => {
+        console.log(error);
+    });
+
+    res.redirect('/');
 });
 
 app.get("/work", (req, res) => {
