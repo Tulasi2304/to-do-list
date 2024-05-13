@@ -20,6 +20,13 @@ const item1 = new Item({
     name: 'Welcome to your ToDo List'
 });
 
+const listSchema = new mongoose.Schema({
+    name: String,
+    items: [itemSchema]
+});
+
+const List = mongoose.model('List', listSchema);
+
 const defaultItem = [item1];
 
 app.get("/", (req, res) =>{
@@ -45,19 +52,43 @@ app.get("/", (req, res) =>{
 
 app.post("/", (req, res) => {
     const newItem = req.body.todo;
+    const listName = req.body.list;
     const item = new Item({
         name: newItem
     });
-    item.save();
-    res.redirect('/');
+    if(listName === 'Today'){
+        item.save();
+        res.redirect('/');
+    }
+    else{
+        List.findOne({name: listName}).then((result) => {
+            result.items.push(item);
+            result.save();
+            res.redirect('/lists/'+listName);
+        })
+        .catch((error) => {
+            console.log(error);
+        });
+    }
 
-    // if(req.body.list === 'Work'){
-    //     workItems.push(item);
-    //     res.redirect("/work");
-    // }else{
-    //     items.push(item);
-    //     res.redirect("/");
-    // }
+});
+
+app.get("/lists/:customList", (req, res) => {
+    const customListName = req.params.customList;
+    List.findOne({name: customListName}).then((result) => {
+        if(!result){
+            const list = new List({
+                name: customListName,
+                items: defaultItem
+            });
+            list.save();
+            res.redirect('/lists/'+customListName);
+        }
+        else{
+            res.render("list", {title: result.name, newItems: result.items});
+        }
+    })
+
 });
 
 app.post('/delete', (req, res) => {
@@ -71,10 +102,6 @@ app.post('/delete', (req, res) => {
     });
 
     res.redirect('/');
-});
-
-app.get("/work", (req, res) => {
-    res.render("list", {title: "Work", newItems: workItems});
 });
 
 app.listen(3000, () => {
