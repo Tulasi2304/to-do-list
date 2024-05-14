@@ -1,6 +1,7 @@
 const express = require('express');
 const ejs = require('ejs');
 const mongoose = require('mongoose');
+const _ = require('lodash');
 
 const app = express();
 
@@ -74,7 +75,7 @@ app.post("/", (req, res) => {
 });
 
 app.get("/lists/:customList", (req, res) => {
-    const customListName = req.params.customList;
+    const customListName = _.capitalize(req.params.customList);
     List.findOne({name: customListName}).then((result) => {
         if(!result){
             const list = new List({
@@ -115,7 +116,6 @@ app.post('/delete', (req, res) => {
         .catch((err) => {
             console.log(err);
         });
-        
     }
     
 });
